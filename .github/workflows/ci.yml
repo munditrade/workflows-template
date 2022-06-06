@@ -1,1 +1,42 @@
-test
+name: Reusable CI
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - v*
+
+jobs:
+  build-push-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Tag Decision
+        id: tagDecision
+        run: |
+          TAG=noop
+          if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TAG=stable
+          elif [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+rc$ ]]; then
+            TAG=rc
+          elif [[ "${{ github.ref }}" =~ ^refs/heads/develop$ ]]; then
+            TAG=nightly
+          fi
+          echo ::set-output name=tag::${TAG}
+          
+      - name: Dockefile Decision
+        id: dockerfileDecision
+        run: |
+          dockerfile=noop
+          if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            dockerfile=./Dockerfile
+          elif [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+rc$ ]]; then
+            dockerfile=./Dockerfile-stage
+          elif [[ "${{ github.ref }}" =~ ^refs/heads/develop$ ]]; then
+            dockerfile=./Dockerfile-dev
+          fi
+          echo ::set-output name=dockerfile::${dockerfile}
