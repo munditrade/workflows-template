@@ -6,6 +6,13 @@ on:
       REPO_NAME:
         required: true
         type: string
+    secrets:
+      DEV_DOCKER_PASSWORD:
+        required: true
+      STG_DOCKER_PASSWORD:
+        required: true
+      PRD_DOCKER_PASSWORD:
+        required: true
 
 jobs:
   run-tests:
