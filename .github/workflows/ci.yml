@@ -6,6 +6,9 @@ on:
       REPO_NAME:
         required: true
         type: string
+    secrets:
+      GH_TOKEN:
+        required: false
 
 jobs:
   run-tests:
