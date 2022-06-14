@@ -8,7 +8,7 @@ on:
         type: string
     secrets:
       GH_TOKEN:
-        required: false
+        required: true
 
 jobs:
   run-tests:
