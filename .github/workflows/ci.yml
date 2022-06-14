@@ -11,30 +11,31 @@ env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
-  run-tests:
-    runs-on: ubuntu-latest
+  # run-tests:
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [12.x]
+  #   strategy:
+  #     matrix:
+  #       node-version: [12.x]
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Dependencies
-        run: yarn install
-      - name: Run tests
-        run: yarn test:jest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Cache node modules
+  #       uses: actions/cache@v2
+  #       env:
+  #         cache-name: cache-node-modules
+  #       with:
+  #         path: "**/node_modules"
+  #         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Install Dependencies
+  #       run: yarn install
+  #       run: npm install -g jest
+  #     - name: Run tests
+  #       run: yarn test:jest
 
   env-lint:
     runs-on: ubuntu-latest
@@ -99,7 +100,6 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
