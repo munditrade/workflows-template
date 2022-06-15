@@ -165,8 +165,8 @@ jobs:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
         with:
           source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
-          destination_repo: 'munditrade/${{ inputs.REPO_NAME }}'
-          destination_branch: 'master'
+          destination_repo: 'munditrade/microservices-chart'
+          destination_branch: ${{ steps.prep.outputs.env.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
@@ -177,9 +177,9 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
         with:
-          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
-          destination_repo: 'munditrade/${{ inputs.REPO_NAME }}'
-          destination_branch: 'master'
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env. }}.yaml
+          destination_repo: 'munditrade/microservices-chart'
+          destination_branch: ${{ steps.prep.outputs.env.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
