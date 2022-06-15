@@ -160,7 +160,6 @@ jobs:
 
       - name: Push file
         id: push
-        if: startsWith(github.ref, 'refs/tags/')
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
