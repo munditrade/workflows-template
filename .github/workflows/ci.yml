@@ -163,8 +163,6 @@ jobs:
         uses: ASzc/change-string-case-action@v1
         with:
           string: ${{ steps.prep.outputs.env }}
-        run: |
-          echo "${{ steps.string.outputs.lowercase }}"
 
       - name: Push file
         id: push
