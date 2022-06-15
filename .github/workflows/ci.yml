@@ -158,6 +158,14 @@ jobs:
           app_id: ${{ secrets.APPLICATION_ID }}
           private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
+      - name: ENV lowercase
+        id: string
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ steps.prep.outputs.env }}
+        run: |
+          echo "${{ steps.string.outputs.lowercase }}"
+
       - name: Push file
         id: push
         uses: dmnemec/copy_file_to_another_repo_action@main
@@ -166,7 +174,7 @@ jobs:
         with:
           source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
           destination_repo: 'munditrade/microservices-chart'
-          destination_branch: ${{ steps.prep.outputs.env.lowercase }}
+          destination_branch: ${{ steps.string.outputs.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
@@ -177,9 +185,9 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
         with:
-          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env. }}.yaml
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
           destination_repo: 'munditrade/microservices-chart'
-          destination_branch: ${{ steps.prep.outputs.env.lowercase }}
+          destination_branch: ${{ steps.string.outputs.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
