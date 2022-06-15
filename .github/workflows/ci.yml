@@ -13,6 +13,10 @@ on:
         required: true
       PRD_DOCKER_PASSWORD:
         required: true        
+      APPLICATION_ID:
+        required: true        
+      APPLICATION_PRIVATE_KEY:
+        required: true                        
 
 # env:
 #   GH_TOKEN: ${{ secrets.GH_TOKEN }}
