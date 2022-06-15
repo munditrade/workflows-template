@@ -87,15 +87,19 @@ jobs:
           if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$')
             ENV=PRD
+            PRJ=prj-mundi-prd
           elif [[ ${{ github.event.ref }} =~ .[0-9]rc$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)+rc$')
             ENV=STG
+            PRJ=prj-mundi-stg
           elif [[ "${{ github.ref }}" =~ ^refs/heads/master$ ]]; then
             TAG=${GITHUB_SHA::7}
             ENV=DEV
+            PRJ=prj-mundi-dev-330421
           fi
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=env::${ENV}
+          echo ::set-output name=prj::${PRJ}
 
       - name: Build and push DEV Docker image
         if: steps.prep.outputs.env == 'DEV'
@@ -129,3 +133,50 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+
+
+################################################################## CD ##################################################################
+      - name: Setup template for updated image to be deployed
+        uses: cuchi/jinja2-action@v1.2.0
+        id: deploy-file
+        with:
+          template: .github/templates/deployment-template.yaml.j2
+          output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          strict: true
+          variables: |
+            tag=${{ steps.prep.outputs.tag }}
+            repository=gcr.io/${{ steps.prep.outputs.prj }}/${{ inputs.REPO_NAME }}
+
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APPLICATION_ID }}
+          private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
+
+      - name: Push file
+        id: push
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
+        with:
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          destination_repo: 'munditrade/${{ inputs.REPO_NAME }}'
+          destination_branch: 'master'
+          user_email: '${{ github.event.repository.name }}@mundi.io'
+          user_name: '${{ github.event.repository.name }}'
+          commit_message: 'deployment from ${{ github.event.repository.name }}'
+
+      - name: Retry on failure
+        if: steps.push.outcome == 'failure'
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
+        with:
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          destination_repo: 'munditrade/${{ inputs.REPO_NAME }}'
+          destination_branch: 'master'
+          user_email: '${{ github.event.repository.name }}@mundi.io'
+          user_name: '${{ github.event.repository.name }}'
+          commit_message: 'deployment from ${{ github.event.repository.name }}'
