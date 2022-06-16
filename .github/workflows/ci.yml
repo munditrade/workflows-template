@@ -140,12 +140,18 @@ jobs:
 
 
 ################################################################## CD ##################################################################
+      - name: ENV lowercase
+        id: string
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ steps.prep.outputs.env }}
+
       - name: Setup template for updated image to be deployed
         uses: cuchi/jinja2-action@v1.2.0
         id: deploy-file
         with:
           template: .github/templates/deployment-template.yaml.j2
-          output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           strict: true
           variables: |
             tag=${{ steps.prep.outputs.tag }}
@@ -157,12 +163,6 @@ jobs:
         with:
           app_id: ${{ secrets.APPLICATION_ID }}
           private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-
-      - name: ENV lowercase
-        id: string
-        uses: ASzc/change-string-case-action@v1
-        with:
-          string: ${{ steps.prep.outputs.env }}
 
       - name: Push file
         id: push
