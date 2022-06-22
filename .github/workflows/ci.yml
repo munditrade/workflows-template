@@ -154,8 +154,7 @@ jobs:
           output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           strict: true
           variables: |
-#            tag=${{ steps.prep.outputs.tag }}
-            tag=nightly
+            tag='nightly'
             repository=gcr.io/${{ steps.prep.outputs.prj }}/${{ inputs.REPO_NAME }}
 
       - name: Generate token
