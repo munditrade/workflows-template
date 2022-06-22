@@ -105,38 +105,38 @@ jobs:
           echo ::set-output name=env::${ENV}
           echo ::set-output name=prj::${PRJ}
 
-      - name: Build and push DEV Docker image
-        if: steps.prep.outputs.env == 'DEV'
-        uses: docker/build-push-action@v1
-        with:
-          dockerfile: Dockerfile
-          username: _json_key
-          password: ${{ secrets.DEV_DOCKER_PASSWORD }}
-          registry: gcr.io
-          repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
-          tags: ${{ steps.prep.outputs.tag }}
+#       - name: Build and push DEV Docker image
+#         if: steps.prep.outputs.env == 'DEV'
+#         uses: docker/build-push-action@v1
+#         with:
+#           dockerfile: Dockerfile
+#           username: _json_key
+#           password: ${{ secrets.DEV_DOCKER_PASSWORD }}
+#           registry: gcr.io
+#           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
+#           tags: ${{ steps.prep.outputs.tag }}
 
-      - name: Build and push rc STG Docker image
-        if: steps.prep.outputs.env == 'STG'
-        uses: docker/build-push-action@v1
-        with:
-          dockerfile: ./Dockerfile
-          username: _json_key
-          password: ${{ secrets.STG_DOCKER_PASSWORD }}
-          registry: gcr.io
-          repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
-          tags: ${{ steps.prep.outputs.tag }}
+#       - name: Build and push rc STG Docker image
+#         if: steps.prep.outputs.env == 'STG'
+#         uses: docker/build-push-action@v1
+#         with:
+#           dockerfile: ./Dockerfile
+#           username: _json_key
+#           password: ${{ secrets.STG_DOCKER_PASSWORD }}
+#           registry: gcr.io
+#           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
+#           tags: ${{ steps.prep.outputs.tag }}
 
-      - name: Build and push PRD Docker image
-        if: steps.prep.outputs.env == 'PRD'
-        uses: docker/build-push-action@v1
-        with:
-          dockerfile: ./Dockerfile
-          username: _json_key
-          password: ${{ secrets.PRD_DOCKER_PASSWORD }}
-          registry: gcr.io
-          repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
-          tags: ${{ steps.prep.outputs.tag }}
+#       - name: Build and push PRD Docker image
+#         if: steps.prep.outputs.env == 'PRD'
+#         uses: docker/build-push-action@v1
+#         with:
+#           dockerfile: ./Dockerfile
+#           username: _json_key
+#           password: ${{ secrets.PRD_DOCKER_PASSWORD }}
+#           registry: gcr.io
+#           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
+#           tags: ${{ steps.prep.outputs.tag }}
 
 
 ################################################################## CD ##################################################################
@@ -154,7 +154,8 @@ jobs:
           output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           strict: true
           variables: |
-            tag=${{ steps.prep.outputs.tag }}
+#            tag=${{ steps.prep.outputs.tag }}
+            tag=nightly
             repository=gcr.io/${{ steps.prep.outputs.prj }}/${{ inputs.REPO_NAME }}
 
       - name: Generate token
