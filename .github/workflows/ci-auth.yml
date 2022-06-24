@@ -12,11 +12,17 @@ on:
       STG_DOCKER_PASSWORD:
         required: true
       PRD_DOCKER_PASSWORD:
-        required: true        
+        required: true
       APPLICATION_ID:
-        required: true        
+        required: true
       APPLICATION_PRIVATE_KEY:
-        required: true                        
+        required: true
+      BACKEND_DEV_API_KEY:
+        required: true
+      BACKEND_STAGE_API_KEY:
+        required: true
+      BACKEND_API_KEY:
+        required: true
 
 # env:
 #   GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -115,6 +121,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: BACKEND_DEV_API_KEY=${{ secrets.BACKEND_DEV_API_KEY }}
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
@@ -126,6 +133,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: BACKEND_STAGE_API_KEY=${{ secrets.BACKEND_STAGE_API_KEY }}
 
       - name: Build and push PRD Docker image
         if: steps.prep.outputs.env == 'PRD'
@@ -137,6 +145,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}
 
 
 ################################################################## CD ##################################################################
