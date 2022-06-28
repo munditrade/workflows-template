@@ -1,4 +1,4 @@
-name: Reusable CI workflow
+name: CI/CD workflow
 
 on:
   workflow_call:
@@ -16,37 +16,40 @@ on:
       APPLICATION_ID:
         required: true        
       APPLICATION_PRIVATE_KEY:
-        required: true                        
+        required: true
+      __DEV__AUTH_APP_URL:
+        required: true
+      __DEV__HASURA_KEY:
+        required: true
+      __DEV__HASURA_URL:
+        required: true
+      __DEV__PUBLIC_URL:
+        required: true
+      __DEV__SEGMENT_KEY:
+        required: true
+      __STG__AUTH_APP_URL:
+        required: true
+      __STG__HASURA_KEY:
+        required: true
+      __STG__HASURA_URL:
+        required: true
+      __STG__PUBLIC_URL:
+        required: true
+      __STG__SEGMENT_KEY:
+        required: true
+      __PRD__AUTH_APP_URL:
+        required: true
+      __PRD__HASURA_KEY:
+        required: true
+      __PRD__HASURA_URL:
+        required: true
+      __PRD__PUBLIC_URL:
+        required: true
+      __PRD__SEGMENT_KEY:
+        required: true        
 
-# env:
-#   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
-  # run-tests:
-  #   runs-on: ubuntu-latest
-
-  #   strategy:
-  #     matrix:
-  #       node-version: [12.x]
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Cache node modules
-  #       uses: actions/cache@v2
-  #       env:
-  #         cache-name: cache-node-modules
-  #       with:
-  #         path: "**/node_modules"
-  #         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #     - name: Install Dependencies
-  #       run: yarn install
-  #       run: npm install -g jest
-  #     - name: Run tests
-  #       run: yarn test:jest
 
   env-lint:
     runs-on: ubuntu-latest
@@ -76,7 +79,6 @@ jobs:
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     needs:
-      # - run-tests
       - env-lint
       - check-duplicates-vars
 
@@ -92,29 +94,47 @@ jobs:
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$')
             ENV=PRD
             PRJ=prj-mundi-prd
+            PREFIX=__PRD__
           elif [[ ${{ github.event.ref }} =~ .[0-9]rc$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)+rc$')
             ENV=STG
             PRJ=prj-mundi-stg
+            PREFIX=__STG__
           elif [[ "${{ github.ref }}" =~ ^refs/heads/master$ ]]; then
             TAG=${GITHUB_SHA::7}
             ENV=DEV
             PRJ=prj-mundi-dev-330421
+            PREFIX=__DEV__
           fi
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=env::${ENV}
           echo ::set-output name=prj::${PRJ}
+          echo ::set-output name=prefix::${PREFIX}
+
+      - name: Getting Secrets
+        uses: shine1594/secrets-to-env-action@master
+        with:
+          secrets: ${{ toJSON(secrets) }}
+          secrets_env: development
+          file_name_dev: .env
+          prefix_dev: ${{ steps.prep.outputs.prefix }}
+
+      - name: Prepare Env Variables
+        run: |
+          echo "" >> .env
+          cat .env >> $GITHUB_ENV
 
       - name: Build and push DEV Docker image
         if: steps.prep.outputs.env == 'DEV'
         uses: docker/build-push-action@v1
         with:
-          dockerfile: Dockerfile
+          dockerfile: ./Dockerfile
           username: _json_key
           password: ${{ secrets.DEV_DOCKER_PASSWORD }}
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
@@ -126,6 +146,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
 
       - name: Build and push PRD Docker image
         if: steps.prep.outputs.env == 'PRD'
@@ -137,6 +158,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
+          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
 
 
 ################################################################## CD ##################################################################
