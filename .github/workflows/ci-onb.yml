@@ -12,9 +12,9 @@ on:
       STG_DOCKER_PASSWORD:
         required: true
       PRD_DOCKER_PASSWORD:
-        required: true        
+        required: true
       APPLICATION_ID:
-        required: true        
+        required: true
       APPLICATION_PRIVATE_KEY:
         required: true
       __DEV__AUTH_APP_URL:
@@ -27,6 +27,8 @@ on:
         required: true
       __DEV__SEGMENT_KEY:
         required: true
+      __DEV__CMS_URL:
+        required: true
       __STG__AUTH_APP_URL:
         required: true
       __STG__HASURA_KEY:
@@ -37,6 +39,8 @@ on:
         required: true
       __STG__SEGMENT_KEY:
         required: true
+      __STG__CMS_URL:
+        required: true
       __PRD__AUTH_APP_URL:
         required: true
       __PRD__HASURA_KEY:
@@ -46,7 +50,9 @@ on:
       __PRD__PUBLIC_URL:
         required: true
       __PRD__SEGMENT_KEY:
-        required: true        
+        required: true
+      __PRD__CMS_URL:
+        required: true
 
 
 jobs:
@@ -94,35 +100,18 @@ jobs:
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$')
             ENV=PRD
             PRJ=prj-mundi-prd
-            PREFIX=__PRD__
           elif [[ ${{ github.event.ref }} =~ .[0-9]rc$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)+rc$')
             ENV=STG
             PRJ=prj-mundi-stg
-            PREFIX=__STG__
           elif [[ "${{ github.ref }}" =~ ^refs/heads/master$ ]]; then
             TAG=${GITHUB_SHA::7}
             ENV=DEV
             PRJ=prj-mundi-dev-330421
-            PREFIX=__DEV__
           fi
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=env::${ENV}
           echo ::set-output name=prj::${PRJ}
-          echo ::set-output name=prefix::${PREFIX}
-
-      - name: Getting Secrets
-        uses: shine1594/secrets-to-env-action@master
-        with:
-          secrets: ${{ toJSON(secrets) }}
-          secrets_env: development
-          file_name_dev: .env
-          prefix_dev: ${{ steps.prep.outputs.prefix }}
-
-      - name: Prepare Env Variables
-        run: |
-          echo "" >> .env
-          cat .env >> $GITHUB_ENV
 
       - name: Build and push DEV Docker image
         if: steps.prep.outputs.env == 'DEV'
@@ -134,7 +123,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
+          build_args: HASURA_KEY=${{ secrets.__DEV__HASURA_KEY }},HASURA_URL=${{ secrets.__DEV__HASURA_URL }},PUBLIC_URL=${{ secrets.__DEV__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__DEV__AUTH_APP_URL }},CMS_URL=${{ secrets.__DEV__CMS_URL }},SEGMENT_KEY=${{ secrets.__DEV__SEGMENT_KEY }}
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
@@ -146,7 +135,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
+          build_args: HASURA_KEY=${{ secrets.__STG__HASURA_KEY }},HASURA_URL=${{ secrets.__STG__HASURA_URL }},PUBLIC_URL=${{ secrets.__STG__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__STG__AUTH_APP_URL }},CMS_URL=${{ secrets.__STG__CMS_URL }},SEGMENT_KEY=${{ secrets.__STG__SEGMENT_KEY }}
 
       - name: Build and push PRD Docker image
         if: steps.prep.outputs.env == 'PRD'
@@ -158,7 +147,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ env.HASURA_KEY }},HASURA_URL=${{ env.HASURA_URL }},PUBLIC_URL=${{ env.PUBLIC_URL }},AUTH_APP_URL=${{ env.AUTH_APP_URL }},CMS_URL=${{ env.CMS_URL }},SEGMENT_KEY=${{ env.SEGMENT_KEY }}
+          build_args: HASURA_KEY=${{ secrets.__PRD__HASURA_KEY }},HASURA_URL=${{ secrets.__PRD__HASURA_URL }},PUBLIC_URL=${{ secrets.__PRD__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__PRD__AUTH_APP_URL }},CMS_URL=${{ secrets.__PRD__CMS_URL }},SEGMENT_KEY=${{ secrets.__PRD__SEGMENT_KEY }}
 
 
 ################################################################## CD ##################################################################
