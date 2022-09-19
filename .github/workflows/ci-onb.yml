@@ -31,6 +31,18 @@ on:
         required: true
       __DEV__GROWTHBOOK_URL:
         required: true
+      __DEV__SENTRY_PROJECT:
+        required: true
+      __DEV__SENTRY_ORG:
+        required: true
+      __DEV__SENTRY_AUTH_TOKEN:
+        required: true
+      __DEV__SENTRY_URL:
+        required: true
+      __DEV__SENTRY_ENABLED:
+        required: true
+      __DEV__SENTRY_DSN:
+        required: true
       __STG__AUTH_APP_URL:
         required: true
       __STG__HASURA_KEY:
@@ -45,6 +57,18 @@ on:
         required: true
       __STG__GROWTHBOOK_URL:
         required: true
+      __STG__SENTRY_PROJECT:
+        required: true
+      __STG__SENTRY_ORG:
+        required: true
+      __STG__SENTRY_AUTH_TOKEN:
+        required: true
+      __STG__SENTRY_URL:
+        required: true
+      __STG__SENTRY_ENABLED:
+        required: true
+      __STG__SENTRY_DSN:
+        required: true
       __PRD__AUTH_APP_URL:
         required: true
       __PRD__HASURA_KEY:
@@ -58,6 +82,18 @@ on:
       __PRD__CMS_URL:
         required: true
       __PRD__GROWTHBOOK_URL:
+        required: true
+      __PRD__SENTRY_PROJECT:
+        required: true
+      __PRD__SENTRY_ORG:
+        required: true
+      __PRD__SENTRY_AUTH_TOKEN:
+        required: true
+      __PRD__SENTRY_URL:
+        required: true
+      __PRD__SENTRY_ENABLED:
+        required: true
+      __PRD__SENTRY_DSN:
         required: true
 
 
