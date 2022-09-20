@@ -31,14 +31,6 @@ on:
         required: true
       __DEV__GROWTHBOOK_URL:
         required: true
-      __DEV__SENTRY_PROJECT:
-        required: true
-      __DEV__SENTRY_ORG:
-        required: true
-      __DEV__SENTRY_AUTH_TOKEN:
-        required: true
-      __DEV__SENTRY_URL:
-        required: true
       __DEV__SENTRY_ENABLED:
         required: true
       __DEV__SENTRY_DSN:
@@ -57,14 +49,6 @@ on:
         required: true
       __STG__GROWTHBOOK_URL:
         required: true
-      __STG__SENTRY_PROJECT:
-        required: true
-      __STG__SENTRY_ORG:
-        required: true
-      __STG__SENTRY_AUTH_TOKEN:
-        required: true
-      __STG__SENTRY_URL:
-        required: true
       __STG__SENTRY_ENABLED:
         required: true
       __STG__SENTRY_DSN:
@@ -82,14 +66,6 @@ on:
       __PRD__CMS_URL:
         required: true
       __PRD__GROWTHBOOK_URL:
-        required: true
-      __PRD__SENTRY_PROJECT:
-        required: true
-      __PRD__SENTRY_ORG:
-        required: true
-      __PRD__SENTRY_AUTH_TOKEN:
-        required: true
-      __PRD__SENTRY_URL:
         required: true
       __PRD__SENTRY_ENABLED:
         required: true
@@ -165,7 +141,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ secrets.__DEV__HASURA_KEY }},HASURA_URL=${{ secrets.__DEV__HASURA_URL }},PUBLIC_URL=${{ secrets.__DEV__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__DEV__AUTH_APP_URL }},CMS_URL=${{ secrets.__DEV__CMS_URL }},SEGMENT_KEY=${{ secrets.__DEV__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__DEV__GROWTHBOOK_URL }}
+          build_args: HASURA_KEY=${{ secrets.__DEV__HASURA_KEY }},HASURA_URL=${{ secrets.__DEV__HASURA_URL }},PUBLIC_URL=${{ secrets.__DEV__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__DEV__AUTH_APP_URL }},CMS_URL=${{ secrets.__DEV__CMS_URL }},SEGMENT_KEY=${{ secrets.__DEV__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__DEV__GROWTHBOOK_URL }},SENTRY_DSN=${{ secrets.__DEV__SENTRY_DSN }},SENTRY_ENABLED=${{ secrets.__DEV__SENTRY_ENABLED }}
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
@@ -177,7 +153,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ secrets.__STG__HASURA_KEY }},HASURA_URL=${{ secrets.__STG__HASURA_URL }},PUBLIC_URL=${{ secrets.__STG__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__STG__AUTH_APP_URL }},CMS_URL=${{ secrets.__STG__CMS_URL }},SEGMENT_KEY=${{ secrets.__STG__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__STG__GROWTHBOOK_URL }}
+          build_args: HASURA_KEY=${{ secrets.__STG__HASURA_KEY }},HASURA_URL=${{ secrets.__STG__HASURA_URL }},PUBLIC_URL=${{ secrets.__STG__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__STG__AUTH_APP_URL }},CMS_URL=${{ secrets.__STG__CMS_URL }},SEGMENT_KEY=${{ secrets.__STG__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__STG__GROWTHBOOK_URL }},SENTRY_DSN=${{ secrets.__STG__SENTRY_DSN }},SENTRY_ENABLED=${{ secrets.__STG__SENTRY_ENABLED }}
 
       - name: Build and push PRD Docker image
         if: steps.prep.outputs.env == 'PRD'
@@ -189,7 +165,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: HASURA_KEY=${{ secrets.__PRD__HASURA_KEY }},HASURA_URL=${{ secrets.__PRD__HASURA_URL }},PUBLIC_URL=${{ secrets.__PRD__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__PRD__AUTH_APP_URL }},CMS_URL=${{ secrets.__PRD__CMS_URL }},SEGMENT_KEY=${{ secrets.__PRD__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__PRD__GROWTHBOOK_URL }}
+          build_args: HASURA_KEY=${{ secrets.__PRD__HASURA_KEY }},HASURA_URL=${{ secrets.__PRD__HASURA_URL }},PUBLIC_URL=${{ secrets.__PRD__PUBLIC_URL }},AUTH_APP_URL=${{ secrets.__PRD__AUTH_APP_URL }},CMS_URL=${{ secrets.__PRD__CMS_URL }},SEGMENT_KEY=${{ secrets.__PRD__SEGMENT_KEY }},GROWTHBOOK_URL=${{ secrets.__PRD__GROWTHBOOK_URL }},SENTRY_DSN=${{ secrets.__PRD__SENTRY_DSN }},SENTRY_ENABLED=${{ secrets.__PRD__SENTRY_ENABLED }}
 
 
 ################################################################## CD ##################################################################
