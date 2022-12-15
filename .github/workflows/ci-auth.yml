@@ -17,11 +17,37 @@ on:
         required: true
       APPLICATION_PRIVATE_KEY:
         required: true
-      BACKEND_DEV_API_KEY:
+      NEXT_PUBLIC_LANDING_URL:
         required: true
-      BACKEND_STAGE_API_KEY:
+      NEXT_PUBLIC_BACKEND_URL:
+        required: true                
+      NEXT_PUBLIC_ONBOARDING_URL:
         required: true
-      BACKEND_API_KEY:
+      NEXT_PUBLIC_NEXT_AUTH_URL:
+        required: true
+      NEXT_PUBLIC_HASURA_URL:
+        required: true
+      NEXT_PUBLIC_CONTACT_MAIL:
+        required: true
+      NEXT_PUBLIC_BACKEND_API_KEY:
+        required: true
+      NEXT_PUBLIC_HASURA_KEY:
+        required: true
+      NEXT_PUBLIC_SENTRY_DSN:
+        required: true
+      NEXT_PUBLIC_SEGMENT_KEY:
+        required: true
+      NEXT_PUBLIC_GH_TOKEN:
+        required: true
+      NEXT_PUBLIC_SENTRY_ENABLED:
+        required: true
+      SENTRY_URL:
+        required: true
+      SENTRY_PROJECT:
+        required: true
+      SENTRY_ORG:
+        required: true
+      SENTRY_AUTH_TOKEN:
         required: true
 
 
@@ -87,25 +113,25 @@ jobs:
         if: steps.prep.outputs.env == 'DEV'
         uses: docker/build-push-action@v1
         with:
-          dockerfile: ./Dockerfile-dev
+          dockerfile: ./Dockerfile
           username: _json_key
           password: ${{ secrets.DEV_DOCKER_PASSWORD }}
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: BACKEND_DEV_API_KEY=${{ secrets.BACKEND_DEV_API_KEY }}
+          build_args: NEXT_PUBLIC_LANDING_URL=${{ secrets.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ secrets.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ secrets.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_HASURA_URL=${{ secrets.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_CONTACT_MAIL=${{ secrets.NEXT_PUBLIC_CONTACT_MAIL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ secrets.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_HASURA_KEY=${{ secrets.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_SEGMENT_KEY=${{ secrets.NEXT_PUBLIC_SEGMENT_KEY }}, NEXT_PUBLIC_GH_TOKEN=${{ secrets.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ secrets.NEXT_PUBLIC_SENTRY_ENABLED }, NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}, SENTRY_URL=${{ secrets.SENTRY_URL }}, SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}, SENTRY_ORG=${{ secrets.SENTRY_ORG }}, SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Build and push rc STG Docker image
         if: steps.prep.outputs.env == 'STG'
         uses: docker/build-push-action@v1
         with:
-          dockerfile: ./Dockerfile-stage
+          dockerfile: ./Dockerfile
           username: _json_key
           password: ${{ secrets.STG_DOCKER_PASSWORD }}
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: BACKEND_STAGE_API_KEY=${{ secrets.BACKEND_STAGE_API_KEY }}
+          build_args: NEXT_PUBLIC_LANDING_URL=${{ secrets.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ secrets.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ secrets.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_HASURA_URL=${{ secrets.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_CONTACT_MAIL=${{ secrets.NEXT_PUBLIC_CONTACT_MAIL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ secrets.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_HASURA_KEY=${{ secrets.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_SEGMENT_KEY=${{ secrets.NEXT_PUBLIC_SEGMENT_KEY }}, NEXT_PUBLIC_GH_TOKEN=${{ secrets.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ secrets.NEXT_PUBLIC_SENTRY_ENABLED }, NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}, SENTRY_URL=${{ secrets.SENTRY_URL }}, SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}, SENTRY_ORG=${{ secrets.SENTRY_ORG }}, SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}          
 
       - name: Build and push PRD Docker image
         if: steps.prep.outputs.env == 'PRD'
@@ -117,7 +143,7 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}
+          build_args: NEXT_PUBLIC_LANDING_URL=${{ secrets.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ secrets.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ secrets.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_HASURA_URL=${{ secrets.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_CONTACT_MAIL=${{ secrets.NEXT_PUBLIC_CONTACT_MAIL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ secrets.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_HASURA_KEY=${{ secrets.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_SEGMENT_KEY=${{ secrets.NEXT_PUBLIC_SEGMENT_KEY }}, NEXT_PUBLIC_GH_TOKEN=${{ secrets.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ secrets.NEXT_PUBLIC_SENTRY_ENABLED }, NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}, SENTRY_URL=${{ secrets.SENTRY_URL }}, SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}, SENTRY_ORG=${{ secrets.SENTRY_ORG }}, SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}          
 
 
 ################################################################## CD ##################################################################
