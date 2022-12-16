@@ -17,6 +17,14 @@ on:
         required: true
       APPLICATION_PRIVATE_KEY:
         required: true
+      VPN_CONFIG:
+        required: true
+      VPN_PASS:
+        required: true
+      VAULT_INTERNAL_ADDR:
+        required: true
+      VAULT_TOKEN:
+        required: true
 
 
 jobs:
