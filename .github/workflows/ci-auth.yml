@@ -17,15 +17,11 @@ on:
         required: true
       APPLICATION_PRIVATE_KEY:
         required: true
-      VPN_CONFIG:
+      BACKEND_DEV_API_KEY:
         required: true
-      VPN_PASS:
+      BACKEND_STAGE_API_KEY:
         required: true
-      VAULT_INTERNAL_ADDR:
-        required: true
-      VAULT_TOKEN:
-        required: true
-      GH_TOKEN:
+      BACKEND_API_KEY:
         required: true
 
 
@@ -72,97 +68,47 @@ jobs:
           TAG=noop
           if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$')
-            ENV=prd
+            ENV=PRD
             PRJ=prj-mundi-prd
           elif [[ ${{ github.event.ref }} =~ .[0-9]rc$ ]]; then
             TAG=$(echo ${GITHUB_REF#refs/*/} | grep -E -o 'v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)+rc$')
-            ENV=stg
+            ENV=STG
             PRJ=prj-mundi-stg
           elif [[ "${{ github.ref }}" =~ ^refs/heads/master$ ]]; then
             TAG=${GITHUB_SHA::7}
-            ENV=dev
+            ENV=DEV
             PRJ=prj-mundi-dev-330421
           fi
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=env::${ENV}
           echo ::set-output name=prj::${PRJ}
 
-      - name: Getting Secrets
-        uses: shine1594/secrets-to-env-action@master
-        with:
-          secrets: ${{ toJSON(secrets) }}
-          secrets_env: development
-          file_name_dev: .env
-          prefix_dev: ${{ steps.prep.outputs.env }}
-
-      - name: Step Connect to VPN
-        uses: munditrade/action-connect_vpn@main
-        id: vpn
-        with:
-          vpn_config: ${{ secrets.VPN_CONFIG }}
-          vpn_pass: ${{ secrets.VPN_PASS }}
-
-      - name: Setup Vault Cli
-        uses: eLco/setup-vault@v1
-        with:
-          version: '~1.9.2'  
-
-      - name: Import Secrets
-        uses: hashicorp/vault-action@v2.3.1
-        with:
-          url: ${{ secrets.VAULT_INTERNAL_ADDR }}
-          token: ${{ secrets.VAULT_TOKEN }}
-          method: token
-          secrets: |
-              /auth-portal/${{ steps.prep.outputs.env }} backend_url | BACKEND_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_backend_api_key | NEXT_PUBLIC_BACKEND_API_KEY;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_backend_url | NEXT_PUBLIC_BACKEND_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_hasura_key | NEXT_PUBLIC_HASURA_KEY;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_hasura_url | NEXT_PUBLIC_HASURA_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_landing_url | NEXT_PUBLIC_LANDING_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_next_auth_url | NEXT_PUBLIC_NEXT_AUTH_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_onboarding_url | NEXT_PUBLIC_ONBOARDING_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_sentry_dsn | NEXT_PUBLIC_SENTRY_DSN;
-              /auth-portal/${{ steps.prep.outputs.env }} next_public_sentry_enabled | NEXT_PUBLIC_SENTRY_ENABLED;
-              /auth-portal/${{ steps.prep.outputs.env }} nextauth_url | NEXTAUTH_URL;
-              /auth-portal/${{ steps.prep.outputs.env }} secret_auth_token | NEXT_PUBLIC_GH_TOKEN;
-              /auth-portal/${{ steps.prep.outputs.env }} segment_key | NEXT_PUBLIC_SEGMENT_KEY;
-              /auth-portal/${{ steps.prep.outputs.env }} sentry_org | SENTRY_ORG;
-              /auth-portal/${{ steps.prep.outputs.env }} sentry_project | SENTRY_PROJECT;    
-              /auth-portal/${{ steps.prep.outputs.env }} sentry_url | SENTRY_URL;
-
-      - name: Prepare Env Variables
-        run: |
-          # echo "" >> .env
-          cat .env >> $GITHUB_ENV
-
       - name: Build and push DEV Docker image
-        if: steps.prep.outputs.env == 'dev'
+        if: steps.prep.outputs.env == 'DEV'
         uses: docker/build-push-action@v1
         with:
-          dockerfile: ./Dockerfile
+          dockerfile: ./Dockerfile-dev
           username: _json_key
           password: ${{ secrets.DEV_DOCKER_PASSWORD }}
           registry: gcr.io
           repository: prj-mundi-dev-330421/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: GH_TOKEN=${{ secrets.GH_TOKEN }}, BACKEND_URL=${{ env.BACKEND_URL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ env.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_HASURA_KEY=${{ env.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_HASURA_URL=${{ env.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_LANDING_URL=${{ env.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ env.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ env.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_SENTRY_DSN=${{ env.NEXT_PUBLIC_SENTRY_DSN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ env.NEXT_PUBLIC_SENTRY_ENABLED }}, NEXTAUTH_URL=${{ env.NEXTAUTH_URL }}, NEXT_PUBLIC_GH_TOKEN=${{ env.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SEGMENT_KEY=${{ env.NEXT_PUBLIC_SEGMENT_KEY }}, SENTRY_ORG=${{ env.SENTRY_ORG }}, SENTRY_PROJECT=${{ env.SENTRY_PROJECT }}, SENTRY_URL=${{ env.SENTRY_URL }}
-          
+          build_args: BACKEND_DEV_API_KEY=${{ secrets.BACKEND_DEV_API_KEY }}
 
       - name: Build and push rc STG Docker image
-        if: steps.prep.outputs.env == 'stg'
+        if: steps.prep.outputs.env == 'STG'
         uses: docker/build-push-action@v1
         with:
-          dockerfile: ./Dockerfile
+          dockerfile: ./Dockerfile-stage
           username: _json_key
           password: ${{ secrets.STG_DOCKER_PASSWORD }}
           registry: gcr.io
           repository: prj-mundi-stg/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: BACKEND_URL=${{ env.BACKEND_URL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ env.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_HASURA_KEY=${{ env.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_HASURA_URL=${{ env.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_LANDING_URL=${{ env.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ env.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ env.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_SENTRY_DSN=${{ env.NEXT_PUBLIC_SENTRY_DSN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ env.NEXT_PUBLIC_SENTRY_ENABLED }}, NEXTAUTH_URL=${{ env.NEXTAUTH_URL }}, NEXT_PUBLIC_GH_TOKEN=${{ env.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SEGMENT_KEY=${{ env.NEXT_PUBLIC_SEGMENT_KEY }}, SENTRY_ORG=${{ env.SENTRY_ORG }}, SENTRY_PROJECT=${{ env.SENTRY_PROJECT }}, SENTRY_URL=${{ env.SENTRY_URL }}
+          build_args: BACKEND_STAGE_API_KEY=${{ secrets.BACKEND_STAGE_API_KEY }}
 
       - name: Build and push PRD Docker image
-        if: steps.prep.outputs.env == 'prd'
+        if: steps.prep.outputs.env == 'PRD'
         uses: docker/build-push-action@v1
         with:
           dockerfile: ./Dockerfile
@@ -171,22 +117,22 @@ jobs:
           registry: gcr.io
           repository: prj-mundi-prd/${{ inputs.REPO_NAME }}
           tags: ${{ steps.prep.outputs.tag }}
-          build_args: BACKEND_URL=${{ env.BACKEND_URL }}, NEXT_PUBLIC_BACKEND_API_KEY=${{ env.NEXT_PUBLIC_BACKEND_API_KEY }}, NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL }}, NEXT_PUBLIC_HASURA_KEY=${{ env.NEXT_PUBLIC_HASURA_KEY }}, NEXT_PUBLIC_HASURA_URL=${{ env.NEXT_PUBLIC_HASURA_URL }}, NEXT_PUBLIC_LANDING_URL=${{ env.NEXT_PUBLIC_LANDING_URL }}, NEXT_PUBLIC_NEXT_AUTH_URL=${{ env.NEXT_PUBLIC_NEXT_AUTH_URL }}, NEXT_PUBLIC_ONBOARDING_URL=${{ env.NEXT_PUBLIC_ONBOARDING_URL }}, NEXT_PUBLIC_SENTRY_DSN=${{ env.NEXT_PUBLIC_SENTRY_DSN }}, NEXT_PUBLIC_SENTRY_ENABLED=${{ env.NEXT_PUBLIC_SENTRY_ENABLED }}, NEXTAUTH_URL=${{ env.NEXTAUTH_URL }}, NEXT_PUBLIC_GH_TOKEN=${{ env.NEXT_PUBLIC_GH_TOKEN }}, NEXT_PUBLIC_SEGMENT_KEY=${{ env.NEXT_PUBLIC_SEGMENT_KEY }}, SENTRY_ORG=${{ env.SENTRY_ORG }}, SENTRY_PROJECT=${{ env.SENTRY_PROJECT }}, SENTRY_URL=${{ env.SENTRY_URL }}
+          build_args: BACKEND_API_KEY=${{ secrets.BACKEND_API_KEY }}
 
 
 ################################################################## CD ##################################################################
-      # - name: ENV lowercase
-      #   id: string
-      #   uses: ASzc/change-string-case-action@v1
-      #   with:
-      #     string: ${{ steps.prep.outputs.env }}
+      - name: ENV lowercase
+        id: string
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ steps.prep.outputs.env }}
 
       - name: Setup template for updated image to be deployed
         uses: cuchi/jinja2-action@v1.2.0
         id: deploy-file
         with:
           template: .github/templates/deployment-template.yaml.j2
-          output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          output_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           strict: true
           variables: |
             tag=${{ steps.prep.outputs.tag }}
@@ -205,9 +151,9 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
         with:
-          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           destination_repo: 'munditrade/microservices-chart'
-          destination_branch: ${{ steps.prep.outputs.env }}
+          destination_branch: ${{ steps.string.outputs.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
@@ -218,9 +164,9 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ steps.generate_token.outputs.token }}
         with:
-          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.prep.outputs.env }}.yaml
+          source_file: .argocd-source-${{ inputs.REPO_NAME }}-${{ steps.string.outputs.lowercase }}.yaml
           destination_repo: 'munditrade/microservices-chart'
-          destination_branch: ${{ steps.prep.outputs.env }}
+          destination_branch: ${{ steps.string.outputs.lowercase }}
           user_email: '${{ github.event.repository.name }}@mundi.io'
           user_name: '${{ github.event.repository.name }}'
           commit_message: 'deployment from ${{ github.event.repository.name }}'
